@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>随机数</title>
+    <style>
+      .total {
+      }
+
+      .useritem + .useritem {
+        /* margin-left: 10px; */
+      }
+
+      .add-box {
+        padding: 10px;
+        border: 1px solid #bbb;
+        width: 300px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="users"></div>
+
+    <!-- Load React. -->
+    <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
+    <script
+      src="https://unpkg.com/react@18/umd/react.development.js"
+      crossorigin
+    ></script>
+    <script
+      src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+      crossorigin
+    ></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+    <!-- Load our React component. -->
+    <script type="text/babel">
+      "use strict";
+
+      const e = React.createElement;
+
+      class UserBox extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {
+            ranUsers: [],
+            users: [
+              "李杰",
+              "丁哲轩",
+              "黄万",
+              "喻英杰",
+              "吕伟睿",
+              "金翰铂",
+              "卢睿涛",
+              "冷嘉豪",
+            ],
+          };
+        }
+
+        componentDidMount() {
+          const items = JSON.parse(localStorage.getItem("items"));
+          if (items && items.length > 0) {
+            this.setState({
+              users: items,
+            });
+          }
+        }
+
+        getRandow() {
+          const users = this.state.users;
+          const len = users.length;
+          const n = Number(document.getElementById("input").value || 5);
+          if (n > len - 1) {
+            return alert(`请输入${len - 1}以内的数字`);
+          }
+          let res = [];
+
+          // 如果有重复的，需要再次随机一下，直到不重复为止
+          // 应该需要有一个方法，可以获取不重复的 user
+          // 生成随机数 如果不重复就push 如果重复 在递归调用自己
+          function getRandomUser() {
+            const ran = Math.floor(Math.random() * Math.floor(len));
+            if (res.find((item) => item === users[ran])) {
+              // 重复 需要递归掉自己
+              return getRandomUser();
+            } else {
+              return users[ran];
+            }
+          }
+
+          new Array(n).fill(1).map((item) => {
+            const user = getRandomUser();
+            res.push(user);
+          });
+
+          this.setState({
+            ranUsers: res,
+          });
+        }
+
+        addUser() {
+          const value = document.getElementById("input2").value;
+          let us = this.state.users;
+          us.push(value);
+          this.setState({
+            users: us,
+          });
+        }
+        deleteUser(name) {
+          console.log({ name });
+          const us = this.state.users;
+          const index = us.findIndex((item) => item === name);
+          us.splice(index, 1);
+          this.setState({
+            users: us,
+          });
+        }
+
+        onSave() {
+          localStorage.setItem("items", JSON.stringify(this.state.users));
+        }
+
+        render() {
+          return (
+            <div>
+              <div>总人员：</div>
+              <div class="add-box">
+                <div class="total">
+                  {this.state.users.map((item) => (
+                    <div class="useritem" key={item}>
+                      {item}
+                      <button
+                        onClick={() => this.deleteUser(item)}
+                        style={{ marginLeft: 10 }}
+                      >
+                        删除
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <hr />
+              </div>
+              <div class="add-box">
+                <div>请输入要随机生成人员的数字：</div>
+                <input
+                  id="input"
+                  placeholder="请输入随机的人数"
+                  maxCount={10}
+                  defaultValue="5"
+                  type="number"
+                />
+              </div>
+              <div class="add-box">
+                <div>请输入要添加的人：</div>
+                <input id="input2" placeholder="请输入要添加的人" />
+                <button style={{ marginTop: 8 }} onClick={() => this.addUser()}>
+                  添加这人
+                </button>
+              </div>
+              <br />
+              <button onClick={() => this.getRandow()}>生成几个人</button>
+              <button style={{ marginLeft: 6 }} onClick={() => this.onSave()}>请点击保存数据，以防下次打开丢失</button>
+              <div class="total">
+                {this.state.ranUsers.map((item) => (
+                  <div class="useritem" key={item}>
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        }
+      }
+
+      const domContainer = document.querySelector("#users");
+      const root = ReactDOM.createRoot(domContainer);
+      root.render(e(UserBox));
+    </script>
+  </body>
+</html>
