@@ -86,9 +86,11 @@
           const items = JSON.parse(localStorage.getItem("items"));
           const proname = localStorage.getItem("proname");
           if (items && items.length > 0) {
-            this.setState({
-              users: items,
-            });
+            if (typeof items[0] === "object") {
+              this.setState({
+                users: items,
+              });
+            }
           }
 
           if (proname) {
@@ -127,7 +129,7 @@
 
           this.setState({
             ranUsers: res,
-            lastTime: dayjs().format('YYYY年M月DD日 HH:mm:ss')
+            lastTime: dayjs().format("YYYY年M月DD日 HH:mm:ss"),
           });
         }
 
@@ -166,9 +168,13 @@
         render() {
           return (
             <div style={{ width: 375 }}>
-              <div style={{fontSize: 30}}>评审专家随机抽取表</div>
-              <div style={{margin: '8px 0', padding: '2px 0'}}>
-                <input placeholder="请输入工程名称" style={{margin: 2}} onInput={(e) => this.onInput(e)} />
+              <div style={{ fontSize: 30 }}>评审专家随机抽取表</div>
+              <div style={{ margin: "8px 0", padding: "2px 0" }}>
+                <input
+                  placeholder="请输入工程名称"
+                  style={{ margin: 2 }}
+                  onInput={(e) => this.onInput(e)}
+                />
               </div>
               <div>{dayjs().format("YYYY年M月DD日")}</div>
               <div>总人员：</div>
@@ -183,7 +189,7 @@
                 <tbody>
                   {(this.state.users || []).map((item, index) => (
                     <tr key={item.id}>
-                      <td>{index}</td>
+                      <td>{index + 1}</td>
                       <td>{item.name}</td>
                       <td>
                         <button onClick={() => this.deleteUser(item.name)}>
@@ -237,7 +243,7 @@
                     display: "flex",
                     justifyContent: "flex-start",
                     alignItems: "center",
-                    padding: '6px 0'
+                    padding: "6px 0",
                   }}
                 >
                   <input id="input2" placeholder="请输入要添加的人" />
@@ -250,7 +256,9 @@
                 </div>
               </div>
               <br />
-              <div style={{margin: '10px 0'}}>最近生成时间: {this.state.lastTime}</div>
+              <div style={{ margin: "10px 0" }}>
+                最近生成时间: {this.state.lastTime}
+              </div>
               <button onClick={() => this.getRandow()}>生成</button>
               <button style={{ marginLeft: 6 }} onClick={() => this.onSave()}>
                 请点击保存数据，以防下次打开丢失
