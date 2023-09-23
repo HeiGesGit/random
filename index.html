@@ -4,22 +4,44 @@
     <meta charset="UTF-8" />
     <title>随机数</title>
     <style>
-      
-
       .add-box {
         padding: 10px;
         border: 1px solid #bbb;
         width: 300px;
         display: flex;
-        justify-content: center;
+        justify-content: flex-start;
         align-items: flex-start;
         flex-direction: column;
+        margin-top: 10px;
+      }
+
+      table,
+      th,
+      td {
+        border: 1px solid black;
+      }
+
+      td {
+        padding: 10px;
       }
     </style>
   </head>
 
   <body>
     <div id="users"></div>
+    <!-- 
+     {this.state.users.map((item) => (
+        <div class="useritem" key={item}>
+            {item}
+            <button
+                onClick={() => this.deleteUser(item)}
+                style={{ marginLeft: 10 }}
+            >
+                删除
+            </button>
+        </div>
+    ))}
+     -->
 
     <!-- Load React. -->
     <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
@@ -32,6 +54,7 @@
       crossorigin
     ></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://unpkg.com/dayjs@1.8.21/dayjs.min.js"></script>
 
     <!-- Load our React component. -->
     <script type="text/babel">
@@ -44,24 +67,33 @@
           super(props);
           this.state = {
             ranUsers: [],
+            proName: "",
+            lastTime: "",
             users: [
-              "李杰",
-              "丁哲轩",
-              "黄万",
-              "喻英杰",
-              "吕伟睿",
-              "金翰铂",
-              "卢睿涛",
-              "冷嘉豪",
+              { id: 1, name: "李杰" },
+              { id: 2, name: "丁哲轩" },
+              { id: 3, name: "黄万" },
+              { id: 4, name: "喻英杰" },
+              { id: 5, name: "吕伟睿" },
+              { id: 6, name: "金翰铂" },
+              { id: 7, name: "卢睿涛" },
+              { id: 8, name: "冷嘉豪" },
             ],
           };
         }
 
         componentDidMount() {
           const items = JSON.parse(localStorage.getItem("items"));
+          const proname = localStorage.getItem("proname");
           if (items && items.length > 0) {
             this.setState({
               users: items,
+            });
+          }
+
+          if (proname) {
+            this.setState({
+              proName: proname,
             });
           }
         }
@@ -95,78 +127,134 @@
 
           this.setState({
             ranUsers: res,
+            lastTime: dayjs().format('YYYY年M月DD日 HH:mm:ss')
           });
         }
 
         addUser() {
           const value = document.getElementById("input2").value;
           let us = this.state.users;
-          us.push(value);
+          us.push({ id: new Date().getTime(), name: value });
           this.setState({
             users: us,
           });
         }
         deleteUser(name) {
-          console.log({ name });
-          const us = this.state.users;
-          const index = us.findIndex((item) => item === name);
-          us.splice(index, 1);
-          this.setState({
-            users: us,
-          });
+          const res = prompt("确认删除吗？", `将会删除${name}`);
+          if (res !== -1) {
+            const us = this.state.users;
+            const index = us.findIndex((item) => item === name);
+            us.splice(index, 1);
+            this.setState({
+              users: us,
+            });
+          }
         }
 
         onSave() {
           localStorage.setItem("items", JSON.stringify(this.state.users));
         }
 
+        onInput(e) {
+          const val = e.target.value;
+          this.setState({
+            proName: val,
+          });
+          window.localStorage.setItem("proname", val);
+        }
+
         render() {
           return (
-            <div>
-              <div>总人员：</div>
-              <div class="add-box">
-                <div class="total">
-                  {this.state.users.map((item) => (
-                    <div class="useritem" key={item}>
-                      {item}
-                      <button
-                        onClick={() => this.deleteUser(item)}
-                        style={{ marginLeft: 10 }}
-                      >
-                        删除
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                <hr />
+            <div style={{ width: 375 }}>
+              <div style={{fontSize: 30}}>评审专家随机抽取表</div>
+              <div style={{margin: '8px 0', padding: '2px 0'}}>
+                <input placeholder="请输入工程名称" style={{margin: 2}} onInput={(e) => this.onInput(e)} />
               </div>
-              <div class="add-box">
-                <div>请输入要随机生成人员的数字：</div>
+              <div>{dayjs().format("YYYY年M月DD日")}</div>
+              <div>总人员：</div>
+              <table bordered>
+                <thead>
+                  <tr>
+                    <td style={{ width: 80 }}>序号</td>
+                    <td style={{ width: 120 }}>专家名称</td>
+                    <td style={{ width: 80 }}>操作</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(this.state.users || []).map((item, index) => (
+                    <tr key={item.id}>
+                      <td>{index}</td>
+                      <td>{item.name}</td>
+                      <td>
+                        <button onClick={() => this.deleteUser(item.name)}>
+                          删除
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div>生成的人员：</div>
+              <table bordered>
+                <thead>
+                  <tr>
+                    <td style={{ width: 80 }}>序号</td>
+                    <td style={{ width: 120 }}>专家名称</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  {this.state.ranUsers.map((item, index) => (
+                    <tr key={index}>
+                      <td>{index}</td>
+                      <td>{item.name}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div
+                class="add-box"
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-start",
+                  alignItems: "center",
+                  flexDirection: "row",
+                }}
+              >
+                <div>请输入随机的人数：</div>
                 <input
                   id="input"
                   placeholder="请输入随机的人数"
                   maxCount={10}
                   defaultValue="5"
                   type="number"
+                  style={{ width: 80 }}
                 />
               </div>
               <div class="add-box">
                 <div>请输入要添加的人：</div>
-                <input id="input2" placeholder="请输入要添加的人" />
-                <button style={{ marginTop: 8 }} onClick={() => this.addUser()}>
-                  添加这人
-                </button>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "flex-start",
+                    alignItems: "center",
+                    padding: '6px 0'
+                  }}
+                >
+                  <input id="input2" placeholder="请输入要添加的人" />
+                  <button
+                    style={{ marginLeft: 8 }}
+                    onClick={() => this.addUser()}
+                  >
+                    添加
+                  </button>
+                </div>
               </div>
               <br />
-              <button onClick={() => this.getRandow()}>生成几个人</button>
-              <button style={{ marginLeft: 6 }} onClick={() => this.onSave()}>请点击保存数据，以防下次打开丢失</button>
-              <div class="total">
-                {this.state.ranUsers.map((item) => (
-                  <div class="useritem" key={item}>
-                    {item}
-                  </div>
-                ))}
-              </div>
+              <div style={{margin: '10px 0'}}>最近生成时间: {this.state.lastTime}</div>
+              <button onClick={() => this.getRandow()}>生成</button>
+              <button style={{ marginLeft: 6 }} onClick={() => this.onSave()}>
+                请点击保存数据，以防下次打开丢失
+              </button>
             </div>
           );
         }
@@ -177,7 +265,7 @@
       root.render(e(UserBox));
     </script>
     <script>
-      document.body.style.zoom = 2.5
+      document.body.style.zoom = 2.5;
     </script>
   </body>
 </html>
