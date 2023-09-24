@@ -24,6 +24,14 @@
       td {
         padding: 10px;
       }
+
+      .proname {
+        margin: 2px;
+        width: 300px;
+        height: 20px;
+        border: 1px solid #000;
+        border-radius: 4px;
+      }
     </style>
   </head>
 
@@ -67,7 +75,7 @@
           super(props);
           this.state = {
             ranUsers: [],
-            proName: "",
+            proname: "",
             lastTime: "",
             users: [
               { id: 1, name: "李杰" },
@@ -95,7 +103,7 @@
 
           if (proname) {
             this.setState({
-              proName: proname,
+              proname: proname,
             });
           }
         }
@@ -160,7 +168,7 @@
         onInput(e) {
           const val = e.target.value;
           this.setState({
-            proName: val,
+            proname: val,
           });
           window.localStorage.setItem("proname", val);
         }
@@ -170,10 +178,13 @@
             <div style={{ width: 375 }}>
               <div style={{ fontSize: 30 }}>评审专家随机抽取表</div>
               <div style={{ margin: "8px 0", padding: "2px 0" }}>
+                {console.log(this.state.proname)}
                 <input
                   placeholder="请输入工程名称"
                   style={{ margin: 2 }}
                   onInput={(e) => this.onInput(e)}
+                  className="proname"
+                  value={this.state.proname}
                 />
               </div>
               <div>{dayjs().format("YYYY年M月DD日")}</div>
