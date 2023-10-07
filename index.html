@@ -1,1 +1,290 @@
-服务已停用
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>随机数</title>
+    <style>
+      .add-box {
+        padding: 10px;
+        border: 1px solid #bbb;
+        width: 300px;
+        display: flex;
+        justify-content: flex-start;
+        align-items: flex-start;
+        flex-direction: column;
+        margin-top: 10px;
+      }
+
+      table,
+      th,
+      td {
+        border: 1px solid black;
+      }
+
+      td {
+        padding: 10px;
+      }
+
+      .proname {
+        margin: 2px;
+        width: 300px;
+        height: 20px;
+        border: 1px solid #000;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="users"></div>
+    <!-- 
+     {this.state.users.map((item) => (
+        <div class="useritem" key={item}>
+            {item}
+            <button
+                onClick={() => this.deleteUser(item)}
+                style={{ marginLeft: 10 }}
+            >
+                删除
+            </button>
+        </div>
+    ))}
+     -->
+
+    <!-- Load React. -->
+    <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
+    <script
+      src="https://unpkg.com/react@18/umd/react.development.js"
+      crossorigin
+    ></script>
+    <script
+      src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+      crossorigin
+    ></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://unpkg.com/dayjs@1.8.21/dayjs.min.js"></script>
+
+    <!-- Load our React component. -->
+    <script type="text/babel">
+      "use strict";
+
+      const e = React.createElement;
+
+      class UserBox extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {
+            ranUsers: [],
+            proname: "",
+            lastTime: "",
+            users: [
+              { id: 1, name: "李杰" },
+              { id: 2, name: "丁哲轩" },
+              { id: 3, name: "黄万" },
+              { id: 4, name: "喻英杰" },
+              { id: 5, name: "吕伟睿" },
+              { id: 6, name: "金翰铂" },
+              { id: 7, name: "卢睿涛" },
+              { id: 8, name: "冷嘉豪" },
+            ],
+          };
+        }
+
+        componentDidMount() {
+          const items = JSON.parse(localStorage.getItem("items"));
+          const proname = localStorage.getItem("proname");
+          if (items && items.length > 0) {
+            if (typeof items[0] === "object") {
+              this.setState({
+                users: items,
+              });
+            }
+          }
+
+          if (proname) {
+            this.setState({
+              proname: proname,
+            });
+          }
+        }
+
+        getRandow() {
+          const users = this.state.users;
+          const len = users.length;
+          const n = Number(document.getElementById("input").value || 5);
+          if (n > len - 1) {
+            return alert(`请输入${len - 1}以内的数字`);
+          }
+          let res = [];
+
+          // 如果有重复的，需要再次随机一下，直到不重复为止
+          // 应该需要有一个方法，可以获取不重复的 user
+          // 生成随机数 如果不重复就push 如果重复 在递归调用自己
+          function getRandomUser() {
+            const ran = Math.floor(Math.random() * Math.floor(len));
+            if (res.find((item) => item === users[ran])) {
+              // 重复 需要递归掉自己
+              return getRandomUser();
+            } else {
+              return users[ran];
+            }
+          }
+
+          new Array(n).fill(1).map((item) => {
+            const user = getRandomUser();
+            res.push(user);
+          });
+
+          this.setState({
+            ranUsers: res,
+            lastTime: dayjs().format("YYYY年M月DD日 HH:mm:ss"),
+          });
+        }
+
+        addUser() {
+          const value = document.getElementById("input2").value;
+          let us = this.state.users;
+          us.push({ id: new Date().getTime(), name: value });
+          this.setState({
+            users: us,
+          });
+        }
+        deleteUser(name) {
+          const res = prompt("确认删除吗？", `将会删除${name}`);
+          if (res !== -1) {
+            const us = this.state.users;
+            const index = us.findIndex((item) => item === name);
+            us.splice(index, 1);
+            this.setState({
+              users: us,
+            });
+          }
+        }
+
+        onSave() {
+          localStorage.setItem("items", JSON.stringify(this.state.users));
+        }
+
+        onInput(e) {
+          const val = e.target.value;
+          this.setState({
+            proname: val,
+          });
+          window.localStorage.setItem("proname", val);
+        }
+
+        render() {
+          return (
+            <div style={{ width: 375 }}>
+              <div style={{ fontSize: 30 }}>评审专家随机抽取表</div>
+              <div style={{ margin: "8px 0", padding: "2px 0" }}>
+                {console.log(this.state.proname)}
+                <input
+                  placeholder="请输入工程名称"
+                  style={{ margin: 2 }}
+                  onInput={(e) => this.onInput(e)}
+                  className="proname"
+                  value={this.state.proname}
+                />
+              </div>
+              <div>{dayjs().format("YYYY年M月DD日")}</div>
+              <div>总人员：</div>
+              <table bordered>
+                <thead>
+                  <tr>
+                    <td style={{ width: 80 }}>序号</td>
+                    <td style={{ width: 120 }}>专家名称</td>
+                    <td style={{ width: 80 }}>操作</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(this.state.users || []).map((item, index) => (
+                    <tr key={item.id}>
+                      <td>{index + 1}</td>
+                      <td>{item.name}</td>
+                      <td>
+                        <button onClick={() => this.deleteUser(item.name)}>
+                          删除
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div>生成的人员：</div>
+              <table bordered>
+                <thead>
+                  <tr>
+                    <td style={{ width: 80 }}>序号</td>
+                    <td style={{ width: 120 }}>专家名称</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  {this.state.ranUsers.map((item, index) => (
+                    <tr key={index}>
+                      <td>{index + 1}</td>
+                      <td>{item.name}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div
+                class="add-box"
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-start",
+                  alignItems: "center",
+                  flexDirection: "row",
+                }}
+              >
+                <div>请输入随机的人数：</div>
+                <input
+                  id="input"
+                  placeholder="请输入随机的人数"
+                  maxCount={10}
+                  defaultValue="5"
+                  type="number"
+                  style={{ width: 80 }}
+                />
+              </div>
+              <div class="add-box">
+                <div>请输入要添加的人：</div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "flex-start",
+                    alignItems: "center",
+                    padding: "6px 0",
+                  }}
+                >
+                  <input id="input2" placeholder="请输入要添加的人" />
+                  <button
+                    style={{ marginLeft: 8 }}
+                    onClick={() => this.addUser()}
+                  >
+                    添加
+                  </button>
+                </div>
+              </div>
+              <br />
+              <div style={{ margin: "10px 0" }}>
+                最近生成时间: {this.state.lastTime}
+              </div>
+              <button onClick={() => this.getRandow()}>生成</button>
+              <button style={{ marginLeft: 6 }} onClick={() => this.onSave()}>
+                请点击保存数据，以防下次打开丢失
+              </button>
+            </div>
+          );
+        }
+      }
+
+      const domContainer = document.querySelector("#users");
+      const root = ReactDOM.createRoot(domContainer);
+      root.render(e(UserBox));
+    </script>
+    <script>
+      document.body.style.zoom = 2.5;
+    </script>
+  </body>
+</html>
